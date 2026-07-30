@@ -3,9 +3,7 @@ from datetime import datetime
 import urllib.request
 import urllib.error
 
-
-
-ENDPOINT = "http://localhost:8000/url/generate"
+ENDPOINT = "http://localhost:8000/generate"
 DELAY_BETWEEN_REQUESTS = 0.05  # 200 requests per second
 
 print(f"Starting GET loop against {ENDPOINT}...")
@@ -19,7 +17,7 @@ try:
         
         try:
             # Default is GET request
-            req = urllib.request.Request(ENDPOINT)
+            req = urllib.request.Request(ENDPOINT, method="POST")
             
             with urllib.request.urlopen(req, timeout=5) as response:
                 result = response.read().decode('utf-8').strip()

@@ -9,9 +9,9 @@ WORKER_ID = settings.worker_id
 
 last_timestamp, sequence_number = 0, 0
 
-router = APIRouter(prefix = "/url", tags=["URL"])
+router = APIRouter(tags=["Generate"])
   
-@router.get("/generate")
+@router.post("/generate")
 async def generate_url():
   global last_timestamp, sequence_number
   
@@ -40,7 +40,9 @@ async def generate_url():
   mutex.release()
   
   encoded_snowflake_id = base62.encode(snowflake_id)
-  return encoded_snowflake_id
+  
+  # Will figure this out later, to get the actual URL
+  return "http://localhost:8000/" + str(encoded_snowflake_id)
   
   
   
