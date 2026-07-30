@@ -7,13 +7,15 @@ import base62
 CUSTOM_EPOCH = settings.custom_epoch
 WORKER_ID = settings.worker_id
 
+last_timestamp, sequence_number = 0, 0
+
 router = APIRouter(prefix = "/url", tags=["URL"])
   
-@router.get("/shorten")
-async def shorten_url():
+@router.get("/generate")
+async def generate_url():
+  global last_timestamp, sequence_number
+  
   mutex = Lock()
-  last_timestamp, sequence_number = 0, 0
-
   mutex.acquire()
   
   current_timestamp = int(time.time()) - CUSTOM_EPOCH
