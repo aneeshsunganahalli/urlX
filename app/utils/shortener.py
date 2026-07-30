@@ -15,6 +15,7 @@ seq = 0
 mutex.acquire()
 # On request
 cts = int(time.time()) - CUSTOM_EPOCH
+# print(cts)
 if cts == lts:
   if seq == 4095:
     now = time.time()
@@ -35,14 +36,24 @@ else:
 
 # ts | worker id | seq
 id = cts << 16 | w << 12 | seq
+cshift = cts << 16
+wshift = w << 12
+# print(cts)
+print(cts)
+print(cshift)
+print(w)
+print(wshift)
+print(seq)
 print(id)
+# print(w << 12)
 
+# print("hi")
 mutex.release()
 
 import base62
 
 encoded_id = base62.encode(id)
-print(encoded_id)
+# print(encoded_id)
 
 
 

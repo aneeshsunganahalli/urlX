@@ -5,3 +5,6 @@ class Settings(BaseSettings):
     custom_epoch: int
 
     model_config = SettingsConfigDict(env_file=".env")
+
+# Immediately instantiate settings obj
+settings = Settings()
