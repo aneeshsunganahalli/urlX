@@ -3,8 +3,10 @@ from routers import generate
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 import redis
+from database import get_db, Base, engine
 
-from database import get_db
+
+Base.metadata.create_all(bind=engine)
 
 # Connect to Redis
 redis_client = redis.Redis(host='localhost', port=6379, db=0)

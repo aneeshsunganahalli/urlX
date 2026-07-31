@@ -1,7 +1,7 @@
 CREATE TABLE URLs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   short_url VARCHAR(20) UNIQUE NOT NULL,
-  original_url TEXT NOT NULL,
+  original_url TEXT UNIQUE NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   click_count INTEGER DEFAULT 0
 );

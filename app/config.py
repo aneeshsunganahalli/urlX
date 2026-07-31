@@ -4,6 +4,7 @@ class Settings(BaseSettings):
     worker_id: int
     custom_epoch: int
     database_url: str
+    client_url: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
