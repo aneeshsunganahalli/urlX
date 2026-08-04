@@ -1,8 +1,10 @@
 from contextlib import asynccontextmanager
+from typing import Annotated
 
-from fastapi import FastAPI, status, HTTPException
+from fastapi import FastAPI, status, HTTPException, Header
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
+from user_agents import parse
 
 from routers import generate, redirect
 from database import Base, engine
