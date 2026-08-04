@@ -10,7 +10,7 @@ AsyncSessionLocal = async_sessionmaker(bind=engine, autocommit=False, autoflush=
 Base = declarative_base()
 
 async def get_db():
-    async with AsyncSessionLocal as db:
+    async with AsyncSessionLocal() as db:
         try:
             yield db  
         finally:

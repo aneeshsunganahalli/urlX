@@ -33,14 +33,18 @@ async def get_client() -> Redis:
   return redis
 
 async def get(key: KeyT) -> str | None:
-    return await get_client().get(key)
+  client = await get_client()
+  if client is not None:
+    return await client.get(key)
 
 async def set(
     key: KeyT, 
     value: EncodableT, 
     expire_seconds: int | None = None
 ) -> bool | None:
-    return await get_client().set(key, value, ex=expire_seconds)
+  client = await get_client()
+  if client is not None:
+    return await client.set(key, value, ex=expire_seconds)
 
 
 async def increment_and_mark(short_url: str) -> int:
@@ -65,6 +69,12 @@ async def cron():
       
       if not dirty_set:
         break
+      
+      stmt = (
+    update(URLs.__table__)  # Appending __table__ allows to bypass strict ORM for raw SQL bulk update
+    .where(URLs.__table__.c.short_url == bindparam("b_short_url"))
+    .values(click_count = URLs.__table__.c.click_count + bindparam("b_click_count"))
+)
     
       payload = []
       keys_to_delete = []
@@ -77,15 +87,13 @@ async def cron():
           continue
         
         payload.append({
-          "short_url":  url,
-          "click_count": int(amount)
+          "b_short_url":  url,
+          "b_click_count": int(amount)
         })
         keys_to_delete.append(count_key)
         
       if not payload:
         continue
-      
-      stmt = update(URLs).where(URLs.short_url == bindparam("short_url")).values(click_count = URLs.click_count + bindparam("click_count"))
       
       try:
         await db.execute(stmt, payload)  

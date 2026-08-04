@@ -4,7 +4,7 @@ from fastapi import FastAPI, status, HTTPException
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
 
-from routers import generate
+from routers import generate, redirect
 from database import Base, engine
 from cache import connect, disconnect, cron
 from deps import DatabaseDep, RedisDep
@@ -29,12 +29,13 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(generate.router)
+app.include_router(redirect.router)
 
 @app.get("/")
 def root():
     return {"message": "API is running."}
 
-@app.get("/db-health")
+@app.get("/db/health")
 async def db_health_check(db: DatabaseDep):
     try:
         # Check database health
@@ -46,7 +47,7 @@ async def db_health_check(db: DatabaseDep):
             detail=f"Database connection failed: {str(e)}"
         )
 
-@app.get("/redis-health")
+@app.get("/redis/health")
 async def redis_health_check(redis: RedisDep):
     try:
         is_alive = await redis.ping()
