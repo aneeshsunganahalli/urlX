@@ -78,11 +78,4 @@ async def generate_url(input_url: urlSchema.URLCreate, response: Response, db: D
   await db.commit()
   await db.refresh(db_url)
   
-  return db_url
-
-
-
-  
-  
-  
-  
+  return db_url  

@@ -13,4 +13,3 @@ class URLs(Base):
   click_count = Column(Integer, default=0, server_default="0")
   
   analytics = relationship("Analytics", back_populates='url',cascade="all, delete-orphan")
-  

@@ -53,7 +53,3 @@ async def redis_health_check(redis: RedisDep):
         return {"status": "ok", "redis": is_alive}
     except Exception as e:
         return {"status": "error", "redis_error": str(e)}
-
-
-    
-    
