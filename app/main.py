@@ -1,28 +1,44 @@
-from fastapi import FastAPI, Depends, status, HTTPException
-from routers import generate
-from sqlalchemy.orm import Session
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, status, HTTPException
+from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
-import redis
-from database import get_db, Base, engine
 
+from routers import generate
+from database import Base, engine
+from cache import connect, disconnect, cron
+from deps import DatabaseDep, RedisDep
 
-Base.metadata.create_all(bind=engine)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
+    await connect()
+    
+    scheduler = AsyncIOScheduler()
+    scheduler.add_job(cron, "interval", seconds=60)
+    scheduler.start()
+    
+    yield
+    
+    scheduler.shutdown()
+    await disconnect()
+    
+app = FastAPI(lifespan=lifespan)
 
-# Connect to Redis
-redis_client = redis.Redis(host='localhost', port=6379, db=0)
-
-app = FastAPI()
 app.include_router(generate.router)
 
 @app.get("/")
 def root():
-    return {"API is running."}
+    return {"message": "API is running."}
 
-@app.get("/health-check")
-def health_check(db: Session = Depends(get_db)):
+@app.get("/db-health")
+async def db_health_check(db: DatabaseDep):
     try:
         # Check database health
-        db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))
         return {"status": "healthy", "database": "connected"}
     except Exception as e:
         raise HTTPException(
@@ -30,6 +46,13 @@ def health_check(db: Session = Depends(get_db)):
             detail=f"Database connection failed: {str(e)}"
         )
 
+@app.get("/redis-health")
+async def redis_health_check(redis: RedisDep):
+    try:
+        is_alive = await redis.ping()
+        return {"status": "ok", "redis": is_alive}
+    except Exception as e:
+        return {"status": "error", "redis_error": str(e)}
 
 
     
