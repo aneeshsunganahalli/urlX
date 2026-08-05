@@ -37,9 +37,8 @@ app.include_router(generate)
 app.include_router(redirect)
 
 @app.get("/")
-def root():
-    print(os.uname().nodename)
-    return {"message": "API is running."}
+def root(request: Request):
+    return {"message": "API is running.", "workerID": request.app.state.worker_id}
 
 @app.get("/db/health")
 async def db_health_check(db: DatabaseDep):

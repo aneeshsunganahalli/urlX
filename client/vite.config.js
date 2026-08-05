@@ -4,9 +4,10 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/generate': {
+      '/server': {
         target: 'http://localhost',
         changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/server/, ''),
       },
     },
   },
