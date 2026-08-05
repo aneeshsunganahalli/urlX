@@ -3,9 +3,9 @@ import concurrent.futures
 from collections import Counter
 
 # Update this to the IP or domain where Nginx is listening
-TARGET_URL = "http://localhost" 
-TOTAL_REQUESTS = 1000
-CONCURRENT_WORKERS = 10
+TARGET_URL = "http://localhost/server/" 
+TOTAL_REQUESTS = 100
+CONCURRENT_WORKERS = 70
 
 def fetch_server_id():
     """Hits the endpoint and extracts the server_id from the JSON response."""
@@ -17,8 +17,10 @@ def fetch_server_id():
         data = response.json()
         return str(data.get("workerID", "missing_id_in_response"))
         
-    except requests.exceptions.RequestException as e:
-        return f"Failed: {type(e).__name__}"
+    except requests.exceptions.HTTPError as e:
+        if e.response.status_code == 503:
+            return "Failed: Rate Limited (503)"
+        return f"Failed: HTTP {e.response.status_code}"
 
 def run_test():
     print(f"Firing {TOTAL_REQUESTS} requests at {TARGET_URL}...")
