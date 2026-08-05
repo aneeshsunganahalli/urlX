@@ -21,7 +21,7 @@ For this I am just gonna assign manual worker ID’s to my docker instances thro
 ### Sequence ID
 Using two variables to calculate sequence, Current Timestamp (cts) and Last Timestamp (lts).  Looking at the code below, since **seq** and **lts** are mutable during requests, need synchronisation mechanism like a mutex for concurrent requests
 
-![Event Driven Sequence Counter](../images/EventDrivenSequencing.png)
+![Event Driven Sequence Counter](/docs/images/EventDrivenSequencing.png)
 
 ```python title:BaseLogic
 # Base Logic
