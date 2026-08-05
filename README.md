@@ -4,7 +4,7 @@ urlX is a simple URL shortener built with FastAPI. It lets you create short link
 
 ---
 
-![Architecture](/images/Architecture.png)
+![Architecture](/docs/images/Architecture.png)
 
 ## Features
 

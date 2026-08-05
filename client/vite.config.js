@@ -5,7 +5,7 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/generate': {
-        target: 'http://localhost:8000',
+        target: 'http://localhost',
         changeOrigin: true,
       },
     },

@@ -2,17 +2,16 @@ import time
 import asyncio
 
 import base62
-from fastapi import APIRouter, Depends, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Response, Request
 from sqlalchemy import select
 
 from schemas import urls as urlSchema
 from models import URLs
 from config import settings
-from deps import DatabaseDep
+from deps import DatabaseDep, get_worker_id
 
 
 CUSTOM_EPOCH = settings.custom_epoch
-WORKER_ID = settings.worker_id
 
 router = APIRouter(tags=["Generate"])
 
@@ -22,7 +21,7 @@ last_timestamp, sequence_number = 0, 0
 def get_current_time():
   return int(time.time()) - CUSTOM_EPOCH
 
-async def generate_snowflake_id():
+async def generate_snowflake_id(worker_id: int):
     global last_timestamp, sequence_number
   
     async with mutex:
@@ -41,12 +40,12 @@ async def generate_snowflake_id():
         sequence_number = 0
       last_timestamp = current_timestamp
 
-    snowflake_id = (current_timestamp << 16) | (WORKER_ID << 12) | sequence_number
+    snowflake_id = (current_timestamp << 16) | (worker_id << 12) | sequence_number
     return snowflake_id
 
 
 @router.post("/generate", response_model=urlSchema.URLResponse, status_code=status.HTTP_201_CREATED)
-async def generate_url(input_url: urlSchema.URLCreate, response: Response, db: DatabaseDep):
+async def generate_url(input_url: urlSchema.URLCreate, response: Response, request: Request, db: DatabaseDep):
   
   # Check if the input URL already exists in the database
   target_url = str(input_url.original_url)
@@ -60,7 +59,8 @@ async def generate_url(input_url: urlSchema.URLCreate, response: Response, db: D
 
   # Since it doesn't exist, we will create a new shortened URL
   try:
-    snowflake_id = await generate_snowflake_id()
+    worker_id = get_worker_id(request)
+    snowflake_id = await generate_snowflake_id(worker_id)
   except RuntimeError as err:
     raise HTTPException(
       status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

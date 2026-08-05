@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
+import os
 
-from fastapi import FastAPI, status, HTTPException, Header
+from fastapi import FastAPI, status, HTTPException, Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from sqlalchemy import text
 
 from routers import generate, redirect
 from database import Base, engine
-from cache import connect, disconnect, cron
+from cache import connect, disconnect, cron, increment
 from deps import DatabaseDep, RedisDep
 
 @asynccontextmanager
@@ -16,6 +17,10 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
         
     await connect()
+    
+    worker_id = await increment("global_worker_counter")
+    app.state.worker_id = worker_id % 1024      # 1024 >> 16 hence collision is not likely to happen
+    
     
     scheduler = AsyncIOScheduler()
     scheduler.add_job(cron, "interval", seconds=60)
@@ -28,11 +33,12 @@ async def lifespan(app: FastAPI):
     
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(generate.router)
-app.include_router(redirect.router)
+app.include_router(generate)
+app.include_router(redirect)
 
 @app.get("/")
 def root():
+    print(os.uname().nodename)
     return {"message": "API is running."}
 
 @app.get("/db/health")
@@ -54,3 +60,7 @@ async def redis_health_check(redis: RedisDep):
         return {"status": "ok", "redis": is_alive}
     except Exception as e:
         return {"status": "error", "redis_error": str(e)}
+    
+@app.get("/test/a")
+def printer(request: Request):
+    return {request.app.state.worker_id}

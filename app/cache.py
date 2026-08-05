@@ -13,7 +13,7 @@ async def connect() -> None:
   global redis
   
   redis = Redis(
-    host='localhost', 
+    host='host.docker.internal', 
     port=6379, 
     db=0,
     decode_responses=True
@@ -58,6 +58,10 @@ async def increment_and_mark(short_url: str) -> int:
   result = await pipe.execute()
   
   return result[0]
+
+async def increment(key: KeyT) -> int:
+  client = await get_client()
+  return await client.incr(key)
 
   
 async def cron():

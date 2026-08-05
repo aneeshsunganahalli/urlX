@@ -6,8 +6,8 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import select, insert
 from user_agents import parse
 
-from deps import DatabaseDep
 from database import AsyncSessionLocal
+from deps import DatabaseDep
 from models import URLs, Analytics
 from cache import get, set, increment_and_mark
 

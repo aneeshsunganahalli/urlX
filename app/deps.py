@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,3 +9,6 @@ from cache import get_client
 
 DatabaseDep = Annotated[AsyncSession, Depends(get_db)]
 RedisDep = Annotated[Redis, Depends(get_client)]
+
+def get_worker_id(request: Request) -> int:
+    return request.app.state.worker_id

@@ -2,7 +2,7 @@ import './style.css';
 
 // ── Config ───────────────────────────────────────────────────────
 const API_BASE = '';  // Proxied through Vite
-const BACKEND_URL = 'http://localhost:8000';  // For display/copy
+const BACKEND_URL = 'http://localhost';  // For display/copy
 
 // ── Icons (inline SVGs) ──────────────────────────────────────────
 const icons = {
