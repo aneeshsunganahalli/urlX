@@ -14,26 +14,36 @@ from cache import get, set, increment_and_mark
 router = APIRouter(tags=["Redirects"])
 
 async def process_analytics(short_url: str, user_agent: str | None, url_id: str):
+  """
+  Parses the User Agent for Browser, OS, and Device details, and stores it into the database.
+  Marks and increments click count of the url
+  """
   
-    parsed_ua = parse(user_agent) if user_agent else None
-    
-    analytics_data = {
-        "url_id" : url_id,
-        "browser": parsed_ua.browser.family if parsed_ua else "Unknown",
-        "os": parsed_ua.os.family if parsed_ua else "Unknown",
-        "device": parsed_ua.device.family if parsed_ua else "Unknown",
-    }
-    
-    async with AsyncSessionLocal() as db_session:
-        stmt = insert(Analytics).values(**analytics_data)
-        await db_session.execute(stmt)
-        await db_session.commit()
-    
-    await increment_and_mark(short_url)
+  parsed_ua = parse(user_agent) if user_agent else None
+  
+  analytics_data = {
+      "url_id" : url_id,
+      "browser": parsed_ua.browser.family if parsed_ua else "Unknown",
+      "os": parsed_ua.os.family if parsed_ua else "Unknown",
+      "device": parsed_ua.device.family if parsed_ua else "Unknown",
+  }
+  
+  async with AsyncSessionLocal() as db_session:
+      stmt = insert(Analytics).values(**analytics_data)
+      await db_session.execute(stmt)
+      await db_session.commit()
+  
+  await increment_and_mark(short_url)
 
 
 @router.get("/{short_url}")
 async def redirect(short_url: str, db: DatabaseDep, user_agent: Annotated[str | None, Header()], background_tasks: BackgroundTasks):
+  """
+  Redirects the user, when shortened URL is clicked.
+  Checks cache first for match, if not found database is checked and cache is updated
+  Analytics is updated in the background.
+  """
+  
   # Check Cache
   cache_hit = await get(short_url)
   

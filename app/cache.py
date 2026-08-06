@@ -10,6 +10,10 @@ from database import AsyncSessionLocal
 redis: Redis | None = None
 
 async def connect() -> None:
+  """
+  Starts the connection with Redis client and checks connection.
+  """
+  
   global redis
   
   redis = Redis(
@@ -22,17 +26,28 @@ async def connect() -> None:
   await redis.ping()
 
 async def disconnect() -> None:
+  """
+  Closes the Redis client connection.
+  """
+  
   global redis
   if redis is not None:
         await redis.aclose()
         redis = None
   
 async def get_client() -> Redis:
+  """
+  Returns the client, used in dependency injection.
+  """
+  
   if redis is None:
     raise RuntimeError("Redis client is not initialized. Call connect() first.")
   return redis
 
 async def get(key: KeyT) -> str | None:
+  """
+  Returns the value associated with provided key, else None
+  """
   client = await get_client()
   if client is not None:
     return await client.get(key)
@@ -42,12 +57,20 @@ async def set(
     value: EncodableT, 
     expire_seconds: int | None = None
 ) -> bool | None:
+  
+  """
+  Returns ok if value was set to provided key
+  """
+  
   client = await get_client()
   if client is not None:
     return await client.set(key, value, ex=expire_seconds)
 
 
 async def increment_and_mark(short_url: str) -> int:
+  """
+  Increments the click count of a URL in Redis, and marks it for the cron job to check it.
+  """
   
   count_key = f"{short_url}:count"
   client = await get_client()
@@ -60,11 +83,18 @@ async def increment_and_mark(short_url: str) -> int:
   return result[0]
 
 async def increment(key: KeyT) -> int:
+  """
+  Increments a key's value.
+  """
+  
   client = await get_client()
   return await client.incr(key)
 
   
 async def cron():
+  """
+  Cron job which bulk updates the click count of all marked URLs from the values stored in Redis, occurs every 60 seconds
+  """
   client = await get_client()
   
   async with AsyncSessionLocal() as db:

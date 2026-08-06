@@ -18,36 +18,48 @@ router = APIRouter(tags=["Generate"])
 mutex = asyncio.Lock()
 last_timestamp, sequence_number = 0, 0
 
-def get_current_time():
+def get_current_time() -> int:
+  """
+  Generates the timestamp field at a given moment.
+  This endpoint fetches the current time and subtracts the custom epoch from it.
+  """
   return int(time.time()) - CUSTOM_EPOCH
 
 async def generate_snowflake_id(worker_id: int):
-    global last_timestamp, sequence_number
-  
-    async with mutex:
-      current_timestamp = get_current_time()
-      if current_timestamp < last_timestamp:
-            raise RuntimeError("Refine system time.")
-          
-      if current_timestamp == last_timestamp:
-        sequence_number = (sequence_number + 1) & 4095
-        if sequence_number == 0:
-          while current_timestamp <= last_timestamp:
-            await asyncio.sleep(0.01)
-            current_timestamp = get_current_time()
-      
-      else:
-        sequence_number = 0
-      last_timestamp = current_timestamp
+  """
+  Generates the Snowflake ID.
+  Combines the timestamp, worker_id and sequence number.
+  """
+    
+  global last_timestamp, sequence_number
 
-    snowflake_id = (current_timestamp << 18) | (worker_id << 12) | sequence_number
-    # For current_timestamp it can be << 16 to << 22 since I am playing around in the 4 - 10 bit range for Worker IDs
-    return snowflake_id
+  async with mutex:
+    current_timestamp = get_current_time()
+    if current_timestamp < last_timestamp:
+          raise RuntimeError("Refine system time.")
+        
+    if current_timestamp == last_timestamp:
+      sequence_number = (sequence_number + 1) & 4095
+      if sequence_number == 0:
+        while current_timestamp <= last_timestamp:
+          await asyncio.sleep(0.01)
+          current_timestamp = get_current_time()
+    
+    else:
+      sequence_number = 0
+    last_timestamp = current_timestamp
+
+  snowflake_id = (current_timestamp << 18) | (worker_id << 12) | sequence_number
+  # For current_timestamp it can be << 16 to << 22 since I am playing around in the 4 - 10 bit range for Worker IDs
+  return snowflake_id
 
 
 @router.post("/generate", response_model=urlSchema.URLResponse, status_code=status.HTTP_201_CREATED)
 async def generate_url(input_url: urlSchema.URLCreate, response: Response, request: Request, db: DatabaseDep):
-  
+  """
+  Generates the shortened URL by Base 62 encoding the Snowflake ID and stores it in the database.
+  If it already exists, just returns the existing one.
+  """
   # Check if the input URL already exists in the database
   target_url = str(input_url.original_url)
   

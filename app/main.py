@@ -42,6 +42,10 @@ def root(request: Request):
 
 @app.get("/db/health")
 async def db_health_check(db: DatabaseDep):
+    """
+    Endpoint checks if there is a healthy connection to the Postgres Database
+    """
+    
     try:
         # Check database health
         await db.execute(text("SELECT 1"))
@@ -54,12 +58,20 @@ async def db_health_check(db: DatabaseDep):
 
 @app.get("/redis/health")
 async def redis_health_check(redis: RedisDep):
+    """
+    Checks if there is a healthy connection to the Redis client
+    """
+    
     try:
         is_alive = await redis.ping()
         return {"status": "ok", "redis": is_alive}
     except Exception as e:
         return {"status": "error", "redis_error": str(e)}
     
-@app.get("/test/a")
+@app.get("/worker/id")
 def printer(request: Request):
+    """
+    Simple endpoint to retrieve an instance's worker_id
+    """
+    
     return {request.app.state.worker_id}
