@@ -40,7 +40,8 @@ async def generate_snowflake_id(worker_id: int):
         sequence_number = 0
       last_timestamp = current_timestamp
 
-    snowflake_id = (current_timestamp << 16) | (worker_id << 12) | sequence_number
+    snowflake_id = (current_timestamp << 18) | (worker_id << 12) | sequence_number
+    # For current_timestamp it can be << 16 to << 22 since I am playing around in the 4 - 10 bit range for Worker IDs
     return snowflake_id
 
 

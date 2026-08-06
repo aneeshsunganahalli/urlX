@@ -19,7 +19,7 @@ async def lifespan(app: FastAPI):
     await connect()
     
     worker_id = await increment("global_worker_counter")
-    app.state.worker_id = worker_id % 1024      # 1024 >> 16 hence collision is not likely to happen
+    app.state.worker_id = worker_id % 64      # Keeping the modulo 2^(Worker_ID bits)
     
     
     scheduler = AsyncIOScheduler()
