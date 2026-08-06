@@ -23,7 +23,7 @@ jobs:
       run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
 
     - name: Wait for Databases to Initialize
-      run: sleep 10 
+      run: sleep 25
 
     - name: Health Check & Smoke Test
       run: |
