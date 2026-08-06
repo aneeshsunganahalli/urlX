@@ -5,11 +5,20 @@
 ---
 ![Preview](/docs/images/Preview.png)
 
+
+## Tech Stack
+
+<p align="center">
+  <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
+    <img src="https://skillicons.dev/icons?i=py,nginx,docker,fastapi,postgres,redis" alt="FastAPI" />
+  </a>
+</p>
+
 ---
 
 ![Architecture](/docs/images/Architecture.png)
 
-## ⚡ Features
+## Features
 
 - **URL Shortening:** Generate compact, collision-resistant short links from long URLs.
 - **Fast Redirection:** High-speed redirect engine powered by in-memory caching.
@@ -17,37 +26,18 @@
 - **Health Monitoring:** Dedicated diagnostic endpoints for PostgreSQL and Redis readiness.
 - **Cache-First Lookup:** Minimizes database load by utilizing Redis as an primary read cache.
 
----
 
-## 🛠️ Tech Stack
 
-<p align="center">
-  <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
-    <img src="https://skillicons.dev/icons?i=py,nginx,docker,fastapi,postgres,redis" width="48" height="48" alt="FastAPI" />
-  </a>
-</p>
 
----
 
-## 🔌 API Reference
-
-| Endpoint | Method | Description |
-| :--- | :--- | :--- |
-| `/generate` | `POST` | Shorten a long URL |
-| `/{short_url}` | `GET` | Redirect to the original URL target |
-| `/db/health` | `GET` | Check PostgreSQL database connection status |
-| `/redis/health` | `GET` | Check Redis cache connection status |
-
----
-
-# Tradeoffs
+## Tradeoffs
 
 For my [[URL Shortener]] design, I did not implement a CDN to absorb traffic which is required for an ideal setup, but too much overhead for a small project like this.
 
-## Why PostgreSQL over a NoSQL Database?
+#### Why PostgreSQL over a NoSQL Database?
 Figured since the principal is to keep the number of times the database is read or written to, should be kept as small as possible and it’s mainly read-heavy, so more than the database itself the architecture surrounding it should be absorbing the more frequent reads. So since I’m using Redis to handle most reads and speed, I went with  PostgreSQL, since I’m more familiar with it, so there’s less overhead.
 
-## Shortening Implementation
+#### Shortening Implementation
 Went with a custom Twitter Snowflake ID inspired method instead of hashing, or purely counting. Counting has security risks and Hashing is just plain bad since collision frequencies even though a friend of mine likes to believe *The simplest method is usually the best one*, but his hashing method just doesn’t cut it for scaling this architecture.
 
 #### Custom Snowflake ID
@@ -55,7 +45,6 @@ Went with a custom Twitter Snowflake ID inspired method instead of hashing, or p
 
 Randomness is increased through this but since I’m using seconds for 24 bit Timestamp, it revolved around every 194 days, since 2^24 seconds = 194 days but that was enough for the sake of this project. After that collision can occur if machine with same ID and same sequence number in that second could be combined with timestamp field 194 days later.
 
----
 
 ## 🚀 Getting Started
 
