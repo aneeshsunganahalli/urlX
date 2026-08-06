@@ -54,7 +54,7 @@ Ensure Node.js, Python 3.9+, PostgreSQL, and Redis instances are installed and r
 
 2. **Configure Environment Variables:**
 
-   Create a `.env` file in the project root with the following configuration:
+   Create a `.env.prod` file in the project root with the following configuration:
 
    ```env
    worker_id=1

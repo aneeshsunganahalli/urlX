@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+import os
 
-env_state = ".prod"
+env_state = os.getenv("APP_ENV", ".prod")
 
 class Settings(BaseSettings):
     custom_epoch: int
