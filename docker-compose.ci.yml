@@ -19,7 +19,7 @@ services:
   server: # Note: Ensure this matches the exact name of your backend service in docker-compose.yml
     environment:
       
-      - DATABASE_URL=postgresql://test_user:test_password@postgres:5432/shortener_db
+      - DATABASE_URL=postgresql+asyncpg://test_user:test_password@postgres:5432/shortener_db
       
       - WORKER_ID=1
       - CUSTOM_EPOCH=1704067200
