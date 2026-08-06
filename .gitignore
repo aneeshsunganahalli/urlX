@@ -36,6 +36,8 @@ env/
 
 # Inline environment variables / Secrets
 .env
+.env.dev
+.env.prod
 .env.[a-zA-Z]*
 !.env.example
 *.secret

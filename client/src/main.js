@@ -13,6 +13,7 @@ const icons = {
   clock: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
   click: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9h.01"/><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m15 15-6-6"/></svg>`,
   arrowRight: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>`,
+  externalLink: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>`,
   linkLogo: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
 };
 
@@ -60,10 +61,10 @@ async function shortenUrl(originalUrl) {
 async function copyToClipboard(text, btnElement) {
   try {
     await navigator.clipboard.writeText(text);
-    btnElement.classList.add('copy-btn--copied');
+    btnElement.classList.add('action-btn--copied');
     btnElement.innerHTML = `${icons.check} Copied`;
     setTimeout(() => {
-      btnElement.classList.remove('copy-btn--copied');
+      btnElement.classList.remove('action-btn--copied');
       btnElement.innerHTML = `${icons.copy} Copy`;
     }, 2000);
   } catch {
@@ -136,11 +137,16 @@ function render() {
         ${result ? `
           <div class="result-card" id="result-card">
             <div class="result-card__label">Your shortened URL</div>
-            <div class="result-card__url-row">
+            <div class="result-card__url-display">
               <span class="result-card__url">${getShortUrl(result.short_url)}</span>
-              <button class="copy-btn" id="copy-btn">
+            </div>
+            <div class="result-card__actions">
+              <button class="action-btn" id="copy-btn">
                 ${icons.copy} Copy
               </button>
+              <a class="action-btn action-btn--open" id="open-btn" href="${getShortUrl(result.short_url)}" target="_blank" rel="noopener noreferrer">
+                ${icons.externalLink} Open
+              </a>
             </div>
             <div class="result-card__meta">
               <div class="result-card__meta-item">
@@ -151,10 +157,10 @@ function render() {
                 ${icons.click}
                 <span>${result.click_count} click${result.click_count !== 1 ? 's' : ''}</span>
               </div>
-              <div class="result-card__meta-item result-card__original" title="${result.original_url}">
-                ${icons.link}
-                <span>${result.original_url}</span>
-              </div>
+            </div>
+            <div class="result-card__original-section">
+              <div class="result-card__original-label">Original URL</div>
+              <div class="result-card__original-url" title="${result.original_url}">${result.original_url}</div>
             </div>
           </div>
         ` : ''}
@@ -165,11 +171,18 @@ function render() {
           <div class="history__title">Recent links</div>
           ${history.map((item, i) => `
             <div class="history__item" data-index="${i}" id="history-item-${i}">
-              <span class="history__item-short">${item.short_url}</span>
-              <span class="history__item-original">${item.original_url}</span>
-              <button class="history__item-copy" data-url="${getShortUrl(item.short_url)}" aria-label="Copy short URL" id="history-copy-${i}">
-                ${icons.copy}
-              </button>
+              <div class="history__item-urls">
+                <span class="history__item-short">${item.short_url}</span>
+                <span class="history__item-original">${item.original_url}</span>
+              </div>
+              <div class="history__item-actions">
+                <button class="history__item-btn" data-url="${getShortUrl(item.short_url)}" aria-label="Copy short URL" id="history-copy-${i}">
+                  ${icons.copy}
+                </button>
+                <a class="history__item-btn" href="${getShortUrl(item.short_url)}" target="_blank" rel="noopener noreferrer" aria-label="Open short URL" id="history-open-${i}">
+                  ${icons.externalLink}
+                </a>
+              </div>
             </div>
           `).join('')}
         </div>
@@ -194,11 +207,18 @@ function render() {
   }
 
   // History copy buttons
-  document.querySelectorAll('.history__item-copy').forEach(btn => {
+  document.querySelectorAll('.history__item-btn[data-url]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const url = btn.dataset.url;
       copyToClipboard(url, btn);
+    });
+  });
+
+  // History open links - stop propagation so they don't trigger the item click
+  document.querySelectorAll('.history__item-btn[href]').forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   });
 
