@@ -16,10 +16,19 @@ services:
 
   # We inject environment variables into your existing FastAPI container 
   # so it knows to talk to these new database containers instead of localhost
-  server: # Change this to whatever your backend service is named in your main docker-compose.yml
+  server: # Note: Ensure this matches the exact name of your backend service in docker-compose.yml
     environment:
+      
       - DATABASE_URL=postgresql://test_user:test_password@postgres:5432/shortener_db
-      - REDIS_URL=redis://redis:6379
+      
+      - WORKER_ID=1
+      - CUSTOM_EPOCH=1704067200
+      - CLIENT_URL=http://localhost
+      
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+      - REDIS_PASSWORD=dummy_password
     depends_on:
       - postgres
       - redis
