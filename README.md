@@ -1,18 +1,11 @@
-# urlX
+# _urlX_
 
-**urlX** is a high-performance URL shortening service built with FastAPI. It enables real-time link generation, fast cache-driven redirects, and basic user analytics.
+  _**urlX**_ is a production-inspired URL shortening service focused on scalability, performance, and reliability. It features Redis-backed redirects, PostgreSQL persistence, NGINX load balancing, Dockerized FastAPI services, and asynchronous click analytics to simulate a real-world backend system.
 
 ---
 ![Preview](/docs/images/Preview.png)
 
 
-## Tech Stack
-
-<p align="center">
-  <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
-    <img src="https://skillicons.dev/icons?i=py,nginx,docker,fastapi,postgres,redis" alt="FastAPI" />
-  </a>
-</p>
 
 ---
 
