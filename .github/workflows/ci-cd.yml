@@ -1,0 +1,37 @@
+name: urlX
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  validate-stack:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Build and Start Containers
+      # The -f flags tell Docker to merge both files. 
+      # Your databases will spin up right alongside Nginx and FastAPI.
+      run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d --build
+
+    - name: Wait for Databases to Initialize
+      run: sleep 10 
+
+    - name: Health Check & Smoke Test
+      run: |
+        curl --fail http://localhost/ || exit 1
+        curl --fail http://localhost/server/db/health || exit 1
+        curl --fail http://localhost/server/redis/health || exit 1
+
+    - name: Dump Logs on Failure
+      if: failure()
+      run: docker compose logs
+
+    - name: Clean Up Environment
+      if: always()
+      run: docker compose down

@@ -1,0 +1,25 @@
+# Only for the CI/CD pipeline, checked by Github Actions
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: shortener_db
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  # We inject environment variables into your existing FastAPI container 
+  # so it knows to talk to these new database containers instead of localhost
+  server: # Change this to whatever your backend service is named in your main docker-compose.yml
+    environment:
+      - DATABASE_URL=postgresql://test_user:test_password@postgres:5432/shortener_db
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
