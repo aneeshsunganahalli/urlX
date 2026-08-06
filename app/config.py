@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+env_state = ".prod"
+
 class Settings(BaseSettings):
-    worker_id: int
     custom_epoch: int
     database_url: str
     client_url: str
@@ -10,7 +11,7 @@ class Settings(BaseSettings):
     redis_db: int
     redis_password: str
 
-    model_config = SettingsConfigDict(env_file="../.env")
+    model_config = SettingsConfigDict(env_file=f"../.env{env_state}")
 
 # Immediately instantiate settings obj
 settings = Settings()

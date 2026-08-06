@@ -2,7 +2,7 @@ services:
   server:
     build: ./app
     env_file:
-      - .env
+      - .env.prod
     expose:
       - "8000"
     deploy:
@@ -12,7 +12,7 @@ services:
     build: 
       context: ./client
     env_file:
-      - .env
+      - .env.prod
     expose:
       - "3000"
 

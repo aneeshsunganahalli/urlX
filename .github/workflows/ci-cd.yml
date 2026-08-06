@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  validate-stack:
+  build-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,7 +15,7 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Create dummy .env file
-      run: touch .env
+      run: touch .env.prod
 
     - name: Build and Start Containers
       # The -f flags tell Docker to merge both files. 

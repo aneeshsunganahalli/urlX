@@ -1,5 +1,4 @@
 from contextlib import asynccontextmanager
-import os
 
 from fastapi import FastAPI, status, HTTPException, Request
 from apscheduler.schedulers.asyncio import AsyncIOScheduler

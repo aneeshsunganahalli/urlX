@@ -5,6 +5,7 @@ from sqlalchemy import update, bindparam
 
 from models import URLs
 from database import AsyncSessionLocal
+from config import settings
 
 
 redis: Redis | None = None
@@ -17,9 +18,9 @@ async def connect() -> None:
   global redis
   
   redis = Redis(
-    host='host.docker.internal', 
-    port=6379, 
-    db=0,
+    host= settings.redis_host, 
+    port=settings.redis_port, 
+    db=settings.redis_db,
     decode_responses=True
     )
   
@@ -65,7 +66,6 @@ async def set(
   client = await get_client()
   if client is not None:
     return await client.set(key, value, ex=expire_seconds)
-
 
 async def increment_and_mark(short_url: str) -> int:
   """
