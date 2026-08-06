@@ -1,36 +1,78 @@
 # urlX
 
-urlX is a simple URL shortener built with FastAPI. It lets you create short links, redirect them to their original destinations, and collect basic analytics for clicks.
+**urlX** is a high-performance URL shortening service built with FastAPI. It enables real-time link generation, fast cache-driven redirects, and basic user analytics.
+
+---
+![Preview](/docs/images/Preview.png)
 
 ---
 
 ![Architecture](/docs/images/Architecture.png)
 
-## Features
+## ⚡ Features
 
-- Create short URLs from long URLs
-- Redirect short links to the original target
-- Basic click analytics using user-agent data
-- Health checks for the database and Redis
-- Cache-based redirect lookup for faster responses
+- **URL Shortening:** Generate compact, collision-resistant short links from long URLs.
+- **Fast Redirection:** High-speed redirect engine powered by in-memory caching.
+- **Click Analytics:** Lightweight tracking utilizing User-Agent data upon access.
+- **Health Monitoring:** Dedicated diagnostic endpoints for PostgreSQL and Redis readiness.
+- **Cache-First Lookup:** Minimizes database load by utilizing Redis as an primary read cache.
 
-## Tech Stack
+---
 
-- FastAPI
-- SQLAlchemy
-- PostgreSQL
-- Redis
-- Pydantic settings
+## 🛠️ Tech Stack
 
-## Getting Started
+<p align="center">
+  <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noreferrer">
+    <img src="https://skillicons.dev/icons?i=py,nginx,docker,fastapi,postgres,redis" width="48" height="48" alt="FastAPI" />
+  </a>
+</p>
 
-1. Install dependencies:
+---
+
+## 🔌 API Reference
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/generate` | `POST` | Shorten a long URL |
+| `/{short_url}` | `GET` | Redirect to the original URL target |
+| `/db/health` | `GET` | Check PostgreSQL database connection status |
+| `/redis/health` | `GET` | Check Redis cache connection status |
+
+---
+
+# Tradeoffs
+
+For my [[URL Shortener]] design, I did not implement a CDN to absorb traffic which is required for an ideal setup, but too much overhead for a small project like this.
+
+## Why PostgreSQL over a NoSQL Database?
+Figured since the principal is to keep the number of times the database is read or written to, should be kept as small as possible and it’s mainly read-heavy, so more than the database itself the architecture surrounding it should be absorbing the more frequent reads. So since I’m using Redis to handle most reads and speed, I went with  PostgreSQL, since I’m more familiar with it, so there’s less overhead.
+
+## Shortening Implementation
+Went with a custom Twitter Snowflake ID inspired method instead of hashing, or purely counting. Counting has security risks and Hashing is just plain bad since collision frequencies even though a friend of mine likes to believe *The simplest method is usually the best one*, but his hashing method just doesn’t cut it for scaling this architecture.
+
+#### Custom Snowflake ID
+`24 bit Timestamp | 10 bit Worker ID | 12 bit Sequence Number`
+
+Randomness is increased through this but since I’m using seconds for 24 bit Timestamp, it revolved around every 194 days, since 2^24 seconds = 194 days but that was enough for the sake of this project. After that collision can occur if machine with same ID and same sequence number in that second could be combined with timestamp field 194 days later.
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+Ensure Node.js, Python 3.9+, PostgreSQL, and Redis instances are installed and running locally.
+
+### Backend Setup
+
+1. **Install dependencies:**
 
    ```bash
    pip install -r app/requirements.txt
    ```
 
-2. Create a `.env` file in the project root with the required settings:
+2. **Configure Environment Variables:**
+
+   Create a `.env` file in the project root with the following configuration:
 
    ```env
    worker_id=1
@@ -43,16 +85,26 @@ urlX is a simple URL shortener built with FastAPI. It lets you create short link
    redis_password=
    ```
 
-3. Start the app:
+3. **Run the Application:**
 
    ```bash
    cd app
    uvicorn main:app --reload
    ```
 
-## API Endpoints
+### Frontend Setup (Vite)
 
-- `POST /generate` – shorten a URL
-- `GET /{short_url}` – redirect to the original URL
-- `GET /db/health` – check database health
-- `GET /redis/health` – check Redis health
+1. **Install dependencies:**
+
+   ```bash
+   cd client
+   npm install
+   ```
+
+2. **Run the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+---
